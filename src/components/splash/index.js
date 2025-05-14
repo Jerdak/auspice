@@ -25,6 +25,7 @@ class Splash extends React.Component {
     this.state = {available: {}, errorMessage: undefined};
   }
   componentDidMount() {
+    console.log("Splash narrative", `${getServerAddress()}/getAvailable?prefix=${this.props.reduxPathname}`);
     fetchJSON(`${getServerAddress()}/getAvailable?prefix=${this.props.reduxPathname}`)
       .then((json) => {
         this.setState({available: json});

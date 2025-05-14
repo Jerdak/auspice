@@ -3,13 +3,14 @@ import { connect } from "react-redux";
 import { Helmet } from "react-helmet";
 import { PLAUSIBLE_DATA_DOMAIN, PLAUSIBLE_SRC } from "../../util/plausible";
 import { hasExtension, getExtension } from "../../util/extensions";
+import { getNormalizedPathname } from "../../util/urls";
 
 const Head = ({metadata}) => {
-  let pageTitle = "auspice";
+  let pageTitle = "Nextstrain";
   if (hasExtension("browserTitle")) {
     pageTitle = getExtension("browserTitle");
   }
-  const displayedDataset = window.location.pathname
+  const displayedDataset = getNormalizedPathname()
     .replace(/^\//g, '')
     .replace(/\/$/g, '')
     .replace(/\//g, ' / ')

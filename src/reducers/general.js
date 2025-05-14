@@ -3,7 +3,7 @@ import * as types from "../actions/types";
 import { chooseDisplayComponentFromURL } from "../actions/navigation";
 import { hasExtension, getExtension } from "../util/extensions";
 import { controlsHiddenWidth } from "../util/globals";
-
+import { getNormalizedPathname } from "../util/urls";
 /* the store for cross-cutting state -- that is, state
 not limited to <App>
 */
@@ -18,7 +18,7 @@ const getFirstPageToDisplay = () => {
   if (hasExtension("entryPage")) {
     return getExtension("entryPage");
   }
-  return chooseDisplayComponentFromURL(window.location.pathname);
+  return chooseDisplayComponentFromURL(getNormalizedPathname());
 };
 
 function getInitialMobileState() {
@@ -30,7 +30,7 @@ const general = (state = {
   defaults,
   displayComponent: getFirstPageToDisplay(),
   errorMessage: undefined,
-  pathname: window.location.pathname, // keep a copy of what the app "thinks" the pathname is
+  pathname: getNormalizedPathname(), // keep a copy of what the app "thinks" the pathname is
   language: query.lang ? query.lang : defaults.language,
   mobileDisplay: getInitialMobileState()
 }, action) => {

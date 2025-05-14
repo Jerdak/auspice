@@ -1,5 +1,6 @@
 import { colorOptions } from "../util/globals";
 import * as types from "../actions/types";
+import { getNormalizedPathname } from "../util/urls";
 
 /* The metadata reducer holds data that is
  * (a) mostly derived from the dataset JSON
@@ -30,16 +31,16 @@ const Metadata = (state = {
         if (!geoResolutions) geoResolutions = [action.newGeoResolution]; /* case where no geoRes in JSON */
         else geoResolutions = [...geoResolutions, action.newGeoResolution];
       }
-      return Object.assign({}, state, {colorings, geoResolutions});
+      return Object.assign({}, state, { colorings, geoResolutions });
     }
     case types.REMOVE_METADATA: {
-      const colorings = {...state.colorings};
+      const colorings = { ...state.colorings };
       action.nodeAttrsToRemove.forEach((colorBy) => {
         if (colorBy in colorings) {
           delete colorings[colorBy];
         }
       })
-      return {...state, colorings}
+      return { ...state, colorings }
     }
     case types.SET_AVAILABLE: {
       if (state.buildUrl) {
@@ -47,12 +48,12 @@ const Metadata = (state = {
       }
       const buildUrl = getBuildUrlFromGetAvailableJson(action.data.datasets);
       if (buildUrl) {
-        return Object.assign({}, state, {buildUrl});
+        return Object.assign({}, state, { buildUrl });
       }
       return state;
     }
     case types.SET_ROOT_SEQUENCE:
-      return {...state, rootSequence: action.data};
+      return { ...state, rootSequence: action.data };
     case types.REMOVE_TREE_TOO:
       return Object.assign({}, state, {
         identicalGenomeMapAcrossBothTrees: false,
@@ -68,11 +69,11 @@ function getBuildUrlFromGetAvailableJson(availableData) {
   /* check if the current dataset is present in the getAvailable data
   We currently parse the URL (pathname) for the current dataset but this
   really should be stored somewhere in redux */
-  const displayedDatasetString = window.location.pathname
+  const displayedDatasetString = getNormalizedPathname()
     .replace(/^\//, '')
     .replace(/\/$/, '')
     .split(":")[0];
-  for (let i=0; i<availableData.length; i++) {
+  for (let i = 0; i < availableData.length; i++) {
     if (availableData[i].request === displayedDatasetString) {
       return availableData[i].buildUrl; // may be `undefined`
     }

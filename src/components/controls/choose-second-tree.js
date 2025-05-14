@@ -7,7 +7,7 @@ import { REMOVE_TREE_TOO } from "../../actions/types";
 import { controlsWidth } from "../../util/globals";
 import { SidebarSubtitle } from "./styles";
 import CustomSelect from "./customSelect";
-
+import { getNormalizedPathname } from "../../util/urls";
 @connect((state) => {
   return {
     available: state.controls.available,
@@ -21,7 +21,7 @@ class ChooseSecondTree extends React.Component {
     if (!this.props.available || !this.props.available.datasets) {
       return null;
     }
-    const displayedDataset = window.location.pathname
+    const displayedDataset = getNormalizedPathname()
       .replace(/^\//, '')
       .replace(/\/$/, '')
       .split(':')[0];

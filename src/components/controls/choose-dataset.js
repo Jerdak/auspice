@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import { withTranslation } from "react-i18next";
 import ChooseDatasetSelect from "./choose-dataset-select";
 import { ControlHeader } from "./controlHeader";
-
+import {getNormalizedPathname} from "../../util/urls";
 // const DroppedFiles = withTheme((props) => {
 //   /* TODO: this shouldn't be in the auspice src, rather injected as an extension when needed */
 //   return (
@@ -33,7 +33,7 @@ class ChooseDataset extends React.Component {
       return null;
     }
 
-    const displayedDatasetString = window.location.pathname
+    const displayedDatasetString = getNormalizedPathname()
       .replace(/^\//, '')
       .replace(/\/$/, '')
       .split(":")[0];

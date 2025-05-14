@@ -3,7 +3,7 @@ import { createStateFromQueryOrJSONs } from "./recomputeReduxState";
 import { PAGE_CHANGE, URL_QUERY_CHANGE_WITH_COMPUTED_STATE } from "./types";
 import { getDatasetNamesFromUrl } from "./loadData";
 import { errorNotification } from "./notifications";
-
+import { getNormalizedPathname } from "../util/urls"
 /* Given a URL, what "page" should be displayed?
  * "page" means the main app, splash page, status page etc
  * If in doubt, we go to the datasetLoader page as this will
@@ -91,8 +91,9 @@ export const changePage = ({
 } = {}) => (dispatch, getState) => {
   const oldState = getState();
 
+
   /* set some defaults */
-  if (!path) path = window.location.pathname;
+  if (!path) path = getNormalizedPathname();
   if (!query) query = queryString.parse(window.location.search);
   /* some booleans */
   const pathHasChanged = oldState.general.pathname !== path;

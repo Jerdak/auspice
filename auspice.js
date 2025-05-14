@@ -17,7 +17,7 @@ const parser = new argparse.ArgumentParser({
   or to build a customised version of the software (see "auspice build -h" for details).
   This is the software which powers the visualisations on nextstrain.org and auspice.us, among others.
   `
-});
+}); 
 
 const subparsers = parser.addSubparsers({title: 'Auspice commands', dest: "subcommand"});
 view.addParser(subparsers);

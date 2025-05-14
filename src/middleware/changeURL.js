@@ -5,7 +5,7 @@ import { shouldDisplayTemporalConfidence } from "../reducers/controls";
 import { genotypeSymbol, nucleotide_gene, strainSymbol } from "../util/globals";
 import { encodeGenotypeFilters, decodeColorByGenotype, isColorByGenotype } from "../util/getGenotype";
 import { removeInvalidMeasurementsFilterQuery } from "../actions/measurements";
-
+import { getNormalizedPathname, getBasePath } from "../util/urls";
 export const strainSymbolUrlString = "__strain__";
 
 /**
@@ -33,14 +33,13 @@ export const changeURLMiddleware = (store) => (next) => (action) => {
 
   /* starting URL values & flags */
   let query = queryString.parse(window.location.search);
-  let pathname = window.location.pathname;
-
+  let pathname = getNormalizedPathname({ prefix: "" });
   /* first switch: query change */
   switch (action.type) {
     case types.CLEAN_START: // fallthrough
     case types.URL_QUERY_CHANGE_WITH_COMPUTED_STATE:
       /* don't use queries when debugging a narrative as those URLs aren't intended to be restorable (yet) */
-      if (state.general.displayComponent==="debugNarrative") break;
+      if (state.general.displayComponent === "debugNarrative") break;
       query = action.query;
       if (query.n === 0) delete query.n;
       if (query.tt) delete query.tt;
@@ -61,15 +60,15 @@ export const changeURLMiddleware = (store) => (next) => (action) => {
       applied to the nuc view. As such, if the entropy panel's selected CDS is
       _not_ the same as the colorBy (if applicable) then we don't set gmin/gmax
       */
-      const entropyCdsName = state.entropy.selectedCds===nucleotide_gene ?
+      const entropyCdsName = state.entropy.selectedCds === nucleotide_gene ?
         nucleotide_gene :
         state.entropy.selectedCds.name;
       const colorByCdsName = isColorByGenotype(state.controls.colorBy) &&
         decodeColorByGenotype(state.controls.colorBy, state.entropy.genomeMap).gene;
       const bounds = state.entropy.genomeMap[0].range; // guaranteed to exist, as the action comes from <entropy>
       if (
-        ((!colorByCdsName || colorByCdsName===nucleotide_gene) && entropyCdsName===nucleotide_gene) ||
-        (colorByCdsName===entropyCdsName)
+        ((!colorByCdsName || colorByCdsName === nucleotide_gene) && entropyCdsName === nucleotide_gene) ||
+        (colorByCdsName === entropyCdsName)
       ) {
         query.gmin = action.zoomc[0] <= bounds[0] ? undefined : action.zoomc[0];
         query.gmax = action.zoomc[1] >= bounds[1] ? undefined : action.zoomc[1];
@@ -104,11 +103,11 @@ export const changeURLMiddleware = (store) => (next) => (action) => {
     }
     case types.CHANGE_LAYOUT: {
       const sv = action.scatterVariables;
-      query.scatterX = action.layout==="scatter" && state.controls.distanceMeasure!==sv.x ? sv.x : undefined;
-      query.scatterY = action.layout==="scatter" && state.controls.colorBy!==sv.y ? sv.y : undefined;
-      query.branches = (action.layout==="scatter" || action.layout==="clock") && sv.showBranches===false ? "hide" : undefined;
-      query.regression = action.layout==="scatter" && sv.showRegression===true ? "show" :
-        action.layout==="clock" && sv.showRegression===false ? "hide" :
+      query.scatterX = action.layout === "scatter" && state.controls.distanceMeasure !== sv.x ? sv.x : undefined;
+      query.scatterY = action.layout === "scatter" && state.controls.colorBy !== sv.y ? sv.y : undefined;
+      query.branches = (action.layout === "scatter" || action.layout === "clock") && sv.showBranches === false ? "hide" : undefined;
+      query.regression = action.layout === "scatter" && sv.showRegression === true ? "show" :
+        action.layout === "clock" && sv.showRegression === false ? "hide" :
           undefined;
       query.l = action.layout === state.controls.defaults.layout ? undefined : action.layout;
       if (!shouldDisplayTemporalConfidence(state.controls.temporalConfidence.exists, state.controls.distanceMeasure, query.l)) {
@@ -159,8 +158,8 @@ export const changeURLMiddleware = (store) => (next) => (action) => {
     case types.TOGGLE_PANEL_DISPLAY: {
       /* check this against the defaults set by the dataset (and this default is all available panels if not specifically set) */
       if (
-        state.controls.defaults.panels.length===action.panelsToDisplay.length &&
-        state.controls.defaults.panels.filter((p) => !action.panelsToDisplay.includes(p)).length===0
+        state.controls.defaults.panels.length === action.panelsToDisplay.length &&
+        state.controls.defaults.panels.filter((p) => !action.panelsToDisplay.includes(p)).length === 0
       ) {
         query.d = undefined;
       } else {
@@ -170,9 +169,9 @@ export const changeURLMiddleware = (store) => (next) => (action) => {
       break;
     }
     case types.CHANGE_TIP_LABEL_KEY: {
-      query.tl = action.key===state.controls.defaults.tipLabelKey ? undefined :
-        action.key===strainSymbol ? strainSymbolUrlString :
-        action.key;
+      query.tl = action.key === state.controls.defaults.tipLabelKey ? undefined :
+        action.key === strainSymbol ? strainSymbolUrlString :
+          action.key;
       break;
     }
     case types.CHANGE_DATES_VISIBILITY_THICKNESS: {
@@ -215,9 +214,9 @@ export const changeURLMiddleware = (store) => (next) => (action) => {
       break;
     case types.TOGGLE_NARRATIVE: {
       /* don't use queries when debugging a narrative as those URLs aren't intended to be restorable (yet) */
-      if (state.general.displayComponent==="debugNarrative") break;
+      if (state.general.displayComponent === "debugNarrative") break;
       if (action.narrativeOn === true) {
-        query = {n: state.narrative.blockIdx};
+        query = { n: state.narrative.blockIdx };
       } else if (action.narrativeOn === false) {
         query = queryString.parse(state.narrative.blocks[state.narrative.blockIdx].query);
       }
@@ -226,18 +225,17 @@ export const changeURLMiddleware = (store) => (next) => (action) => {
     case types.CHANGE_MEASUREMENTS_COLLECTION: // fallthrough
     case types.APPLY_MEASUREMENTS_FILTER:
       query = removeInvalidMeasurementsFilterQuery(query, action.queryParams)
-      query = {...query, ...action.queryParams};
+      query = { ...query, ...action.queryParams };
       break;
     case types.CHANGE_MEASUREMENTS_DISPLAY: // fallthrough
     case types.CHANGE_MEASUREMENTS_GROUP_BY: // fallthrough
     case types.TOGGLE_MEASUREMENTS_OVERALL_MEAN: // fallthrough
     case types.TOGGLE_MEASUREMENTS_THRESHOLD: // fallthrough
-      query = {...query, ...action.queryParams};
+      query = { ...query, ...action.queryParams };
       break;
     default:
       break;
   }
-
   /* second switch: path change */
   switch (action.type) {
     case types.CLEAN_START:
@@ -249,7 +247,7 @@ export const changeURLMiddleware = (store) => (next) => (action) => {
       in the URL */
       if (action.tree.name && action.treeToo && action.treeToo.name && !action.narrative) {
         const treeUrlShouldBe = `${action.tree.name}:${action.treeToo.name}`;
-        if (!window.location.pathname.includes(treeUrlShouldBe)) {
+        if (!getNormalizedPathname({ prefix: "" }).includes(treeUrlShouldBe)) {
           pathname = treeUrlShouldBe;
         }
       }
@@ -258,7 +256,7 @@ export const changeURLMiddleware = (store) => (next) => (action) => {
       /* when toggling between the narrative view & the underlying dataset view the intention is to
       have the pathname represent the narrative and the dataset, respectively. However when we are
       editing a narrative we _do not_ want to change the pathname */
-      if (state.general.displayComponent==="debugNarrative") break;
+      if (state.general.displayComponent === "debugNarrative") break;
       if (action.narrativeOn === true) {
         pathname = state.narrative.pathname;
       } else if (action.narrativeOn === false) {
@@ -293,24 +291,28 @@ export const changeURLMiddleware = (store) => (next) => (action) => {
 
   Object.keys(query).filter((q) => query[q] === "").forEach((k) => delete query[k]);
   if (state.narrative.display) {
-    Object.keys(query).filter((q) => q!=='n').forEach((k) => delete query[k]);
+    Object.keys(query).filter((q) => q !== 'n').forEach((k) => delete query[k]);
   }
   let search = queryString.stringify(query).replace(/%2C/g, ',').replace(/%2F/g, '/').replace(/%3A/g, ':');
-  if (search) {search = "?" + search;}
-  if (!pathname.startsWith("/")) {pathname = "/" + pathname;}
+  if (search) { search = "?" + search; }
+  if (!pathname.startsWith("/")) { pathname = "/" + pathname; }
 
   /* now that we have determined our desired pathname & query we modify the URL */
-  if (pathname !== window.location.pathname || search !== window.location.search) {
+  if (pathname !== getNormalizedPathname({ prefix: "" }) || search !== window.location.search) {
     let newURLString = pathname;
-    if (search) {newURLString += search;}
+
+    newURLString = newURLString.replaceAll(getBasePath(), "")
+    newURLString = `${getBasePath()}${newURLString}`
+
+    if (search) { newURLString += search; }
     if (action.pushState) {
       window.history.pushState({}, "", newURLString);
     } else {
       window.history.replaceState({}, "", newURLString);
     }
-    next({type: types.UPDATE_PATHNAME, pathname: pathname});
+    next({ type: types.UPDATE_PATHNAME, pathname: pathname });
   } else if (pathname !== state.general.pathname && action.type === types.PAGE_CHANGE) {
-    next({type: types.UPDATE_PATHNAME, pathname: pathname});
+    next({ type: types.UPDATE_PATHNAME, pathname: pathname });
   }
 
   return result;
