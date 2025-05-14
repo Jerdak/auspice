@@ -10,7 +10,7 @@ const LodashModuleReplacementPlugin = require('lodash-webpack-plugin');
 
 /* Webpack config generator */
 
-const generateConfig = ({extensionPath, devMode=false, customOutputPath, analyzeBundle=false}) => {
+const generateConfig = ({ extensionPath, devMode = false, customOutputPath, analyzeBundle = false }) => {
   utils.verbose(`Generating webpack config. Extensions? ${!!extensionPath}. devMode: ${devMode}`);
 
   // Pins all react stuff, and uses hot loader's dom (can be used safely in production)
@@ -55,7 +55,7 @@ const generateConfig = ({extensionPath, devMode=false, customOutputPath, analyze
     // console.log("BUILDING WITH EXTENSIONS");
     const dir = path.resolve(__dirname, path.dirname(extensionPath));
     aliasesToResolve["@extensions"] = dir;
-    extensionData = JSON.parse(fs.readFileSync(extensionPath, {encoding: 'utf8'}));
+    extensionData = JSON.parse(fs.readFileSync(extensionPath, { encoding: 'utf8' }));
     if (extensionData.googleAnalyticsKey) {
       console.log(`DEPRECATION WARNING: your extensions define a Google Analytics key (${extensionData.googleAnalyticsKey}) but GA will be removed from a future release.`);
     }
@@ -68,7 +68,8 @@ const generateConfig = ({extensionPath, devMode=false, customOutputPath, analyze
     "process.env": {
       NODE_ENV: devMode ? JSON.stringify("development") : JSON.stringify("production"),
       SKIP_REDUX_CHECKS: JSON.stringify(process.env.SKIP_REDUX_CHECKS),
-      EXTENSION_DATA: JSON.stringify(extensionData)
+      EXTENSION_DATA: JSON.stringify(extensionData),
+      AUSPICE_CUSTOM_DOMAIN_MAPPING: JSON.stringify(process.env.AUSPICE_CUSTOM_DOMAIN_MAPPING),
     }
   });
   /* gzip everything - https://github.com/webpack-contrib/compression-webpack-plugin */
@@ -186,7 +187,7 @@ const generateConfig = ({extensionPath, devMode=false, customOutputPath, analyze
       path: outputPath,
       filename: `auspice.[name].bundle${!devMode ? ".[contenthash]" : ""}.js`,
       chunkFilename: `auspice.chunk.[name].bundle${!devMode ? ".[chunkhash]" : ""}.js`,
-      publicPath: "/dist/"
+      publicPath: (process.env.AUSPICE_CUSTOM_DOMAIN_MAPPING) ? `/${process.env.AUSPICE_CUSTOM_DOMAIN_MAPPING}/dist/` : "/dist/"
     },
     resolve: {
       alias: aliasesToResolve,
@@ -267,4 +268,4 @@ const generateConfig = ({extensionPath, devMode=false, customOutputPath, analyze
   return config;
 };
 
-module.exports = {default: generateConfig};
+module.exports = { default: generateConfig };

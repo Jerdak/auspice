@@ -7,10 +7,11 @@ import { loadFrequencies } from "./frequencies";
 import { fetchJSON, fetchWithErrorHandling } from "../util/serverInteraction";
 import { warningNotification, errorNotification } from "./notifications";
 import { parseMarkdownNarrativeFile } from "../util/parseNarrative";
-import { NoContentError, FetchError} from "../util/exceptions";
+import { NoContentError, FetchError } from "../util/exceptions";
 import { parseMarkdown } from "../util/parseMarkdown";
 import { updateColorByWithRootSequenceData } from "../actions/colors";
 import { explodeTree } from "./tree";
+import { getNormalizedPathname, getBasePath } from "../util/urls";
 
 export function getDatasetNamesFromUrl(url) {
   let secondTreeUrl;
@@ -37,7 +38,7 @@ export const loadSecondTree = (secondTreeUrl, firstTreeUrl) => async (dispatch, 
     secondJson = await dataset.main;
   } catch (err) {
     console.error("Failed to fetch additional tree", err.message);
-    dispatch(warningNotification({message: "Failed to fetch second tree"}));
+    dispatch(warningNotification({ message: "Failed to fetch second tree" }));
     return;
   }
 
@@ -48,15 +49,16 @@ export const loadSecondTree = (secondTreeUrl, firstTreeUrl) => async (dispatch, 
     dispatch(explodeTree(undefined));
   }
 
-  const newState = createTreeTooState({json: secondJson, oldState, originalTreeUrl: firstTreeUrl, secondTreeUrl: secondTreeUrl, dispatch});
-  dispatch({type: types.TREE_TOO_DATA, ...newState});
+  const newState = createTreeTooState({ json: secondJson, oldState, originalTreeUrl: firstTreeUrl, secondTreeUrl: secondTreeUrl, dispatch });
+  dispatch({ type: types.TREE_TOO_DATA, ...newState });
 };
 
-export const loadJSONs = ({url = window.location.pathname, search = window.location.search} = {}) => {
+export const loadJSONs = ({ url = getNormalizedPathname(), search = window.location.search } = {}) => {
+  url = url.replace(getBasePath(), '');
   return async (dispatch, getState) => {
     const { tree } = getState();
     if (tree.loaded) {
-      dispatch({type: types.DATA_INVALID}); // "resets" state
+      dispatch({ type: types.DATA_INVALID }); // "resets" state
     }
     const query = queryString.parse(search);
     if (url.includes("/narratives/")) {
@@ -79,10 +81,10 @@ export const loadJSONs = ({url = window.location.pathname, search = window.locat
       mainDataset.loadSidecars(dispatch);
       try {
         mainDataset.fetchAvailable();
-        dispatch({type: types.SET_AVAILABLE, data: await mainDataset.available});
+        dispatch({ type: types.SET_AVAILABLE, data: await mainDataset.available });
       } catch (err) {
         console.error("Failed to fetch available datasets", err.message);
-        dispatch(warningNotification({message: "Failed to fetch available datasets"}));
+        dispatch(warningNotification({ message: "Failed to fetch available datasets" }));
       }
     }
   };
@@ -149,7 +151,7 @@ async function loadNarrative(dispatch, url, query) {
   }
 
   /* extract all dataset names defined in the narrative, and create `Dataset` objects for each */
-  const {datasets, initialNames, frontmatterNames} = parseNarrativeDatasets(blocks, query);
+  const { datasets, initialNames, frontmatterNames } = parseNarrativeDatasets(blocks, query);
 
   /* trigger fetches for the initial dataset(s) & start the visualisation */
   let initialSuccess = true;
@@ -183,7 +185,7 @@ async function loadNarrative(dispatch, url, query) {
     dataset.fetchMain();
     dataset.fetchSidecars();
   });
-  return dispatch({type: types.CACHE_JSONS, jsons: datasets});
+  return dispatch({ type: types.CACHE_JSONS, jsons: datasets });
 }
 
 function handleFetchErrors(err, dispatch, msg) {
@@ -205,6 +207,7 @@ function handleFetchErrors(err, dispatch, msg) {
  * @returns {Promise}
  */
 function fetchAndParseNarrative(url) {
+  console.log("Fetching narrative", url);
   const apiCall = `${getServerAddress()}/getNarrative?prefix=${url}&type=md`;
   return fetchWithErrorHandling(apiCall)
     .then((res) => res.text())
@@ -228,7 +231,7 @@ function fetchAndParseNarrative(url) {
 
 /* this function is exported as auspice.us uses it */
 export function addEndOfNarrativeBlock(narrativeBlocks) {
-  const lastContentSlide = narrativeBlocks[narrativeBlocks.length-1];
+  const lastContentSlide = narrativeBlocks[narrativeBlocks.length - 1];
   const endOfNarrativeSlide = Object.assign({}, lastContentSlide, {
     __html: undefined,
     isEndOfNarrativeSlide: true
@@ -247,10 +250,10 @@ export function parseNarrativeDatasets(blocks, query) {
     const [main, second] = getDatasetNamesFromUrl(block.dataset);
     if (!datasets[main]) datasets[main] = new Dataset(main);
     if (second && !datasets[second]) datasets[second] = new Dataset(second);
-    if (idx===0) {frontmatterNames = [main, second];}
-    if (idx===initialBlockIdx) {initialNames = [main, second];}
+    if (idx === 0) { frontmatterNames = [main, second]; }
+    if (idx === initialBlockIdx) { initialNames = [main, second]; }
   });
-  return {datasets, initialNames, frontmatterNames};
+  return { datasets, initialNames, frontmatterNames };
 }
 
 /**
@@ -274,7 +277,7 @@ Dataset.prototype.fetchMain = function fetchMain() {
   this.main = fetchWithErrorHandling(this.apiCalls.main)
     .then((res) => {
       this.pathname = queryString.parse(res.url.split("?")[1]).prefix;
-      if (this.pathname!==this.name) {
+      if (this.pathname !== this.name) {
         // eslint-disable-next-line no-console
         console.log(`Pathname for "${this.name}" changing to "${this.pathname}".`);
       }
@@ -333,7 +336,7 @@ Dataset.prototype.loadSidecars = function loadSidecars(dispatch) {
       .catch((reason) => {
         console.error(reason)
         const message = `Failed to ${reason instanceof FetchError ? 'fetch' : 'parse'} tip frequencies`;
-        dispatch(warningNotification({message}));
+        dispatch(warningNotification({ message }));
       });
   }
   if (this.rootSequence) {
@@ -341,7 +344,7 @@ Dataset.prototype.loadSidecars = function loadSidecars(dispatch) {
       if (data instanceof Error) throw data;
       return data
     }).then((data) => {
-      dispatch({type: types.SET_ROOT_SEQUENCE, data});
+      dispatch({ type: types.SET_ROOT_SEQUENCE, data });
       dispatch(updateColorByWithRootSequenceData());
     }).catch((reason) => {
       if (reason instanceof FetchError) {
@@ -349,7 +352,7 @@ Dataset.prototype.loadSidecars = function loadSidecars(dispatch) {
         return
       }
       console.error(reason);
-      dispatch(warningNotification({message: "Failed to parse root sequence JSON"}));
+      dispatch(warningNotification({ message: "Failed to parse root sequence JSON" }));
     })
   }
 };

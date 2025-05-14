@@ -1,5 +1,6 @@
 // import ReactGA from "react-ga"; /* https://github.com/react-ga/react-ga */
 import { hasExtension, getExtension } from "./extensions";
+import { getNormalizedPathname } from "./urls";
 
 let ReactGA;
 let importReactGa;
@@ -22,8 +23,8 @@ export const analyticsNewPage = async () => {
   if (importReactGa) await importReactGa;
   else return;
   // console.log("GA page change to", window.location.pathname)
-  ReactGA.set({ page: window.location.pathname });
-  ReactGA.pageview(window.location.pathname);
+  ReactGA.set({ page: getNormalizedPathname() });
+  ReactGA.pageview(getNormalizedPathname());
 };
 
 export const analyticsControlsEvent = async (action) => {

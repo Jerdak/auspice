@@ -7,7 +7,7 @@ import * as helpers from "./helperFunctions";
 import { getFullAuthorInfoFromNode } from "../../util/treeMiscHelpers";
 import { getNumSelectedTips } from "../../util/treeVisibilityHelpers";
 import { getDatasetNamesFromUrl } from "../../actions/loadData";
-
+import { getNormalizedPathname } from "../../util/urls";
 const RectangularTreeIcon = withTheme(icons.RectangularTree);
 const PanelsGridIcon = withTheme(icons.PanelsGrid);
 const MetaIcon = withTheme(icons.Meta);
@@ -18,7 +18,7 @@ const iconWidth = 25;
  * A React Component displaying buttons which trigger data-downloads. Intended for display within the
  * larger Download modal component
  */
-export const DownloadButtons = ({dispatch, t, tree, entropy, metadata, colorBy, distanceMeasure, panelsToDisplay, panelLayout, visibility, relevantPublications}) => {
+export const DownloadButtons = ({ dispatch, t, tree, entropy, metadata, colorBy, distanceMeasure, panelsToDisplay, panelLayout, visibility, relevantPublications }) => {
   const totalTipCount = metadata.mainTreeNumTips;
   const selectedTipsCount = getNumSelectedTips(tree.nodes, tree.visibility);
   const partialData = selectedTipsCount !== totalTipCount;
@@ -37,20 +37,20 @@ export const DownloadButtons = ({dispatch, t, tree, entropy, metadata, colorBy, 
     }
   }
   /* Verify that we can parse dataset name from URL to support Auspice JSON download */
-  const datasetNames = getDatasetNamesFromUrl(window.location.pathname);
+  const datasetNames = getDatasetNamesFromUrl(getNormalizedPathname());
   const supportAuspiceJsonDownload = !gisaidProvenance && datasetNames.some(Boolean);
 
-  const entropyBar = entropy?.selectedCds===nucleotide_gene ? "nucleotide" : "codon";
+  const entropyBar = entropy?.selectedCds === nucleotide_gene ? "nucleotide" : "codon";
 
   return (
     <>
-      <div style={{fontWeight: 500, marginTop: "0px", marginBottom: "20px"}}>
+      <div style={{ fontWeight: 500, marginTop: "0px", marginBottom: "20px" }}>
         Downloaded data represents the currently displayed view.
         By zooming the tree, changing the branch-length metric, applying filters etc, the downloaded data will change accordingly.
-        <p/>
+        <p />
         NOTE: We do not support downloads of multiple subtrees, which are usually created with the date range filter or genotype filters.
         Downloading multiple subtrees will result in an empty Newick tree!
-        <p/>
+        <p />
         {partialData ? `Currently ${selectedTipsCount}/${totalTipCount} tips are displayed and will be downloaded.` : `Currently the entire dataset (${totalTipCount} tips) will be downloaded.`}
       </div>
       {supportAuspiceJsonDownload && (
@@ -63,15 +63,15 @@ export const DownloadButtons = ({dispatch, t, tree, entropy, metadata, colorBy, 
       )}
       <Button
         name={`${temporal ? 'TimeTree' : 'Tree'} (Newick)`}
-        description={`Phylogenetic tree in Newick format with branch lengths in units of ${temporal?'years':'divergence'}.`}
+        description={`Phylogenetic tree in Newick format with branch lengths in units of ${temporal ? 'years' : 'divergence'}.`}
         icon={<RectangularTreeIcon width={iconWidth} selected />}
-        onClick={() => helpers.exportTree({isNewick: true, dispatch, filePrefix, tree, temporal})}
+        onClick={() => helpers.exportTree({ isNewick: true, dispatch, filePrefix, tree, temporal })}
       />
       <Button
         name={`${temporal ? 'TimeTree' : 'Tree'} (Nexus)`}
-        description={`Phylogeny in Nexus format with branch lengths in units of ${temporal?'years':'divergence'}. Colorings are included as annotations.`}
+        description={`Phylogeny in Nexus format with branch lengths in units of ${temporal ? 'years' : 'divergence'}. Colorings are included as annotations.`}
         icon={<RectangularTreeIcon width={iconWidth} selected />}
-        onClick={() => helpers.exportTree({dispatch, filePrefix, tree, colorings: metadata.colorings, colorBy, temporal})}
+        onClick={() => helpers.exportTree({ dispatch, filePrefix, tree, colorings: metadata.colorings, colorBy, temporal })}
       />
       {gisaidProvenance && (
         <Button
@@ -100,7 +100,7 @@ export const DownloadButtons = ({dispatch, t, tree, entropy, metadata, colorBy, 
       {entropy.loaded && (
         <Button
           name="Genetic diversity data (TSV)"
-          description={`The data behind the diversity panel showing ${entropy.showCounts?`a count of changes across the tree`:`normalised shannon entropy`} per ${entropyBar}.`}
+          description={`The data behind the diversity panel showing ${entropy.showCounts ? `a count of changes across the tree` : `normalised shannon entropy`} per ${entropyBar}.`}
           icon={<MetaIcon width={iconWidth} selected />}
           onClick={() => helpers.entropyTSV(dispatch, filePrefix, entropy)}
         />
@@ -128,11 +128,11 @@ export const DownloadButtons = ({dispatch, t, tree, entropy, metadata, colorBy, 
 /**
  * React Component for an individual button
  */
-function Button({name, description, icon, onClick}) {
-  const buttonTextStyle = Object.assign({}, materialButton, {backgroundColor: "rgba(0,0,0,0)", paddingLeft: "10px", color: "white", minWidth: "300px", textAlign: "left" });
+function Button({ name, description, icon, onClick }) {
+  const buttonTextStyle = Object.assign({}, materialButton, { backgroundColor: "rgba(0,0,0,0)", paddingLeft: "10px", color: "white", minWidth: "300px", textAlign: "left" });
   const buttonLabelStyle = { fontStyle: "italic", fontSize: "14px", color: "lightgray" };
   return (
-    <div key={name} onClick={onClick} style={{cursor: 'pointer' }}>
+    <div key={name} onClick={onClick} style={{ cursor: 'pointer' }}>
       {icon}
       <button style={buttonTextStyle} name={name}>
         {name}
@@ -158,8 +158,8 @@ function getNumUniqueAuthors(nodes, nodeVisibilities) {
 
 function getFilePrefix() {
   return "nextstrain_" +
-    window.location.pathname
-        .replace(/^\//, '')       // Remove leading slashes
-        .replace(/:/g, '-')       // Change ha:na to ha-na
-        .replace(/\//g, '_');     // Replace slashes with spaces
+    getNormalizedPathname()
+      .replace(/^\//, '')       // Remove leading slashes
+      .replace(/:/g, '-')       // Change ha:na to ha-na
+      .replace(/\//g, '_');     // Replace slashes with spaces
 }

@@ -3,6 +3,7 @@ import React from "react";
 import { applyFilter } from "../../actions/tree";
 import { changeColorBy } from "../../actions/colors";
 import { encodeColorByGenotype } from "../../util/getGenotype";
+import { getNormalizedPathname } from "../../util/urls";
 
 const INRB = () => {
   return (
@@ -217,30 +218,30 @@ export default function hardCodedFooters(dispatch, genericPreamble) {
    */
 
   // apply to /community/inrb-drc and to /inrb-drc
-  if (window.location.pathname.includes("inrb-drc")) {
+  if (getNormalizedPathname().includes("inrb-drc")) {
     return INRB();
   }
 
-  if (!window.location.pathname.includes("community")) {
-    if (window.location.pathname.includes("ebola")) {
+  if (!getNormalizedPathname().includes("community")) {
+    if (getNormalizedPathname().includes("ebola")) {
       return Ebola(genericPreamble);
     }
-    if (window.location.pathname.includes("zika")) {
+    if (getNormalizedPathname().includes("zika")) {
       return Zika(genericPreamble);
     }
-    if (window.location.pathname.includes("mumps")) {
+    if (getNormalizedPathname().includes("mumps")) {
       return Mumps(genericPreamble);
     }
-    if (window.location.pathname.includes("lassa")) {
+    if (getNormalizedPathname().includes("lassa")) {
       return Lassa(dispatch);
     }
-    if (window.location.pathname.includes("WNV/NA")) {
+    if (getNormalizedPathname().includes("WNV/NA")) {
       return WNV(dispatch);
     }
-    if (window.location.pathname.includes("h7n9")) {
+    if (getNormalizedPathname().includes("h7n9")) {
       return H7N9();
     }
-    if (window.location.pathname.includes("flu")) {
+    if (getNormalizedPathname().includes("flu")) {
       return Flu();
     }
   }

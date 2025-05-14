@@ -8,6 +8,8 @@ s3/
 /local_narratives/
 /datasets/
 
+.npmrc
+
 ### OSX ###
 .DS_Store
 

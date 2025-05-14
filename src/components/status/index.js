@@ -4,6 +4,7 @@ import SingleDataset from "./single";
 import { goTo404 } from "../../actions/navigation";
 import { fetchJSON } from "../../util/serverInteraction";
 import { getServerAddress } from "../../util/globals";
+import { getNormalizedPathname } from "../../util/urls";
 
 @connect()
 class Status extends React.Component {
@@ -12,7 +13,8 @@ class Status extends React.Component {
     this.state = {available: undefined};
   }
   componentDidMount() {
-    fetchJSON(`${getServerAddress()}/getAvailable?prefix=${window.location.pathname}`)
+    console.log("Status", `${getServerAddress()}/getAvailable?prefix=${getNormalizedPathname()}`);
+    fetchJSON(`${getServerAddress()}/getAvailable?prefix=${getNormalizedPathname()}`)
       .then((json) => {this.setState({available: json});})
       .catch((err) => {
         console.warn(err);
@@ -24,7 +26,7 @@ class Status extends React.Component {
       <div style={{display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", minHeight: "50px"}}>
         <div style={{flex: 1}}/>
         <div style={{fontSize: 18}}>
-          {`Status of available datasets for URL prefix "${window.location.pathname}"`}
+          {`Status of available datasets for URL prefix "${getNormalizedPathname()}"`}
         </div>
         <div style={{flex: 1}}/>
       </div>

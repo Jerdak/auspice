@@ -1,5 +1,6 @@
 import * as types from "../actions/types";
 import { AnyAction } from 'redux';
+import { getNormalizedPathname } from '../util/urls'
 
 export interface NarrativeState {
   loaded: boolean
@@ -50,7 +51,7 @@ const narrative = (
           display: true,
           blocks,
           title: blocks[0].__html.match(/>(.+?)</)[1],
-          pathname: window.location.pathname,
+          pathname: getNormalizedPathname(),
           blockIdx: action.query.n || 0
         };
       }

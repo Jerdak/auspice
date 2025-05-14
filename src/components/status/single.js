@@ -20,6 +20,7 @@ class SingleDataset extends React.Component {
     };
   }
   componentDidMount() {
+    console.log("SingleDataset", `${getServerAddress()}/getDataset?prefix=${this.props.path}`);
     fetchJSON(`${getServerAddress()}/getDataset?prefix=${this.props.path}`)
       .then((json) => {
         const state = createStateFromQueryOrJSONs({json, query: ""});
